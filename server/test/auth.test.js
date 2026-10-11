@@ -144,3 +144,30 @@ test('sanitizes malformed JSON and unexpected application errors', () => {
   assert.equal(unexpectedRes.statusCode, 500);
   assert.equal(JSON.stringify(unexpectedRes.body).includes('private database path'), false);
 });
+
+test('allows the configured frontend origin through CORS middleware', () => {
+  const corsMiddleware = app._router.stack.find(
+    (layer) =>
+      typeof layer.handle === 'function' &&
+      layer.handle.length === 3 &&
+      layer.handle.toString().includes('allowedOrigins')
+  ).handle;
+  const headers = {};
+  let continued = false;
+
+  corsMiddleware(
+    { headers: { origin: 'http://localhost:5173' }, method: 'POST' },
+    {
+      setHeader(name, value) {
+        headers[name] = value;
+      },
+    },
+    () => {
+      continued = true;
+    }
+  );
+
+  assert.equal(continued, true);
+  assert.equal(headers['Access-Control-Allow-Origin'], 'http://localhost:5173');
+  assert.equal(headers['Access-Control-Allow-Headers'], 'Content-Type,Authorization');
+});

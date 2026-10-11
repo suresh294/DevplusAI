@@ -6,20 +6,34 @@ const signalRoutes = require('./routes/signalRoutes');
 
 const app = express();
 
-const allowedOrigin = 'http://localhost:5173';
+
+const allowedOrigins = (
+  process.env.CORS_ORIGINS ||
+  'http://localhost:5173,http://127.0.0.1:5173'
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 const allowedMethods = 'GET,POST,PATCH,DELETE,OPTIONS';
 const allowedHeaders = 'Content-Type,Authorization';
 
 app.use((req, res, next) => {
-  if (req.headers.origin === allowedOrigin) {
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', allowedMethods);
     res.setHeader('Access-Control-Allow-Headers', allowedHeaders);
     res.setHeader('Vary', 'Origin');
   }
 
   if (req.method === 'OPTIONS') {
-    return req.headers.origin === allowedOrigin ? res.sendStatus(204) : res.sendStatus(403);
+    if (!origin || allowedOrigins.includes(origin)) {
+      return res.sendStatus(204);
+    }
+
+    return res.sendStatus(403);
   }
 
   return next();
