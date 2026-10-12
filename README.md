@@ -1,139 +1,373 @@
-# DevPulse AI
+# DevPulse AI — Engineering Risk Intelligence
 
-DevPulse AI is an Engineering Risk Intelligence MVP for recording engineering signals, tracking remediation, and explaining project health with deterministic risk scoring.
+**Turn engineering signals into actionable project health insights.**
 
-## Features
+DevPulse AI is a full-stack engineering risk management application that helps developers record bugs, failed tests, and dependency alerts, track remediation, and understand project health through transparent, deterministic risk scoring.
 
-- JWT registration, login, expiration, and protected project ownership.
-- Project and signal create, list, detail, update, and delete workflows.
-- Verification evidence required before a signal becomes `verified`.
-- Deterministic risk and health scores with transparent per-signal breakdowns.
-- Risk snapshots recorded on signal changes and exposed through project history.
-- Responsive React dashboard with loading, empty, validation, filtering, and API-error states.
+Built with **React, Node.js, Express, and MongoDB**, the application combines authenticated project management, evidence-based verification, risk history, and a responsive dashboard in one workflow.
+
+> **Project focus:** Full-stack development · REST API design · Authentication and authorization · Risk scoring · Automated testing · Secure application design
+
+## Key Features
+
+- **Secure authentication:** User registration, password hashing with bcryptjs, signed JWT authentication, and token-expiration handling.
+- **Project management:** Create, view, update, and delete projects through protected API endpoints.
+- **Engineering signal tracking:** Record failed tests, bugs, and dependency alerts with configurable severity levels.
+- **Lifecycle management:** Track signals through `open`, `in_progress`, `fixed_unverified`, `verified`, and `reopened` states.
+- **Evidence-based verification:** Require non-empty verification evidence before a signal can be marked as verified.
+- **Transparent risk scoring:** Calculate project risk using documented severity points, signal types, and status multipliers.
+- **Risk history:** Preserve project risk snapshots following relevant signal changes and review historical risk levels.
+- **Responsive dashboard:** Present project health, risk breakdowns, signal details, filters, loading states, validation feedback, and API errors.
+- **Ownership enforcement:** Protect project and signal operations so users cannot access another user's resources.
+- **Testable architecture:** Keep risk calculations independently testable and validate backend behavior with automated regression tests.
+
+## Why This Project Matters
+
+Engineering teams need more than a list of bugs. They need a way to see which issues remain unresolved, whether remediation has progressed, and how those changes affect project health.
+
+DevPulse AI connects these activities in a single workflow:
+
+1. Create a project.
+2. Record an engineering signal and assign its severity.
+3. Track remediation through defined status transitions.
+4. Attach evidence before verifying completed work.
+5. Review the calculated risk score and project health.
+6. Inspect risk history to understand changes over time.
+
+The scoring logic is deterministic and explainable. The current MVP does not claim to predict future incidents or automatically discover vulnerabilities in external repositories.
+
+## Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | React, Vite, JavaScript, CSS |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Authentication | JSON Web Tokens (JWT), bcryptjs |
+| API | REST, JSON, authenticated requests |
+| Testing | Node.js built-in test runner, isolated model mocks |
+| Build tooling | Vite, npm |
 
 ## Architecture
 
-The backend is a CommonJS Express application using Mongoose and MongoDB. Authentication uses bcryptjs password hashing and signed JSON Web Tokens. The frontend is a Vite-powered React application that calls the JSON API. The scoring service is pure and independently tested.
+```text
+┌──────────────────────────────┐
+│       React Dashboard        │
+│ Projects · Signals · History │
+└──────────────┬───────────────┘
+               │ HTTP / JSON
+               ▼
+┌──────────────────────────────┐
+│       Express REST API       │
+│ Validation · Authentication  │
+│ Authorization · Error Handling│
+└──────────────┬───────────────┘
+               │
+        ┌──────┴────────┐
+        ▼               ▼
+┌──────────────┐  ┌────────────────┐
+│   MongoDB    │  │ Risk Scoring   │
+│ Projects and │  │ Deterministic  │
+│ Signals      │  │ Calculations   │
+└──────────────┘  └───────┬────────┘
+                          ▼
+                 ┌────────────────┐
+                 │ Risk Snapshots │
+                 │ Project History│
+                 └────────────────┘
+```
 
-## Prerequisites
+The React frontend communicates with the Express API using JSON requests. Protected routes validate the user's authentication and resource ownership. Mongoose handles persistence, while the scoring service calculates risk using explicit rules rather than an opaque predictive model.
+
+The server connects to MongoDB before accepting requests. Its health endpoint reports whether the database connection is healthy.
+
+## Risk Scoring Model
+
+DevPulse AI uses a deterministic scoring formula:
+
+**Signal contribution = (severity points + type points) × status multiplier**
+
+### Severity points
+
+| Severity | Points |
+|---|---:|
+| Low | 5 |
+| Medium | 12 |
+| High | 25 |
+| Critical | 40 |
+
+### Signal type points
+
+| Signal type | Points |
+|---|---:|
+| Failed test | 10 |
+| Bug | 8 |
+| Dependency alert | 12 |
+
+### Status multipliers
+
+| Status | Multiplier |
+|---|---:|
+| Open | 1.0 |
+| In progress | 0.7 |
+| Fixed, unverified | 0.5 |
+| Verified | 0 |
+| Reopened | 1.2 |
+
+The contributions of all signals are summed, rounded to the nearest integer, and capped at 100.
+
+**Project health = 100 − project risk**
+
+| Risk score | Risk level |
+|---|---|
+| 0–24 | Low |
+| 25–49 | Medium |
+| 50–74 | High |
+| 75–100 | Critical |
+
+These rules make the score reproducible and allow users to understand how a signal affects the overall result. The score is a rule-based indicator, not a statistically validated prediction of production incidents.
+
+## Getting Started
+
+### Prerequisites
 
 - Node.js 18 or newer
+- npm
 - A MongoDB deployment, such as MongoDB Atlas
-- Separate development and test databases for live API testing
+- A separate database for integration testing if you run live API tests
 
-## Configuration and installation
+### 1. Clone the repository
 
-1. Copy `server/.env.example` to `server/.env`.
-2. Set `MONGODB_URI` to a database dedicated to this environment.
-3. Set `JWT_SECRET` to a random value. Production requires at least 32 characters.
-4. Set `CORS_ORIGINS` to a comma-separated list of exact frontend origins in production.
-5. Optionally copy `client/.env.example` to `client/.env` and set `VITE_API_BASE_URL` to the API URL. Do not put database credentials or JWT secrets in frontend variables.
-6. Install dependencies:
+```bash
+git clone https://github.com/suresh294/DevplusAI.git
+cd DevplusAI
+```
 
-   ```bash
-   npm install --prefix server
-   npm install --prefix client
-   ```
+### 2. Configure the backend
 
-Never commit `.env` files, credentials, tokens, or production connection strings.
+Copy `server/.env.example` to `server/.env` and configure the environment variables supported by the application.
 
-## Run locally
+At minimum, configure:
 
-Start the API:
+```dotenv
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_long_random_secret
+CORS_ORIGINS=http://localhost:5173
+```
+
+Use a dedicated development database. For production, use a securely generated JWT secret of at least 32 characters, restrict CORS to the exact frontend origins, and keep all credentials outside source control.
+
+### 3. Install dependencies
+
+```bash
+npm install --prefix server
+npm install --prefix client
+```
+
+### 4. Start the backend
 
 ```bash
 npm start --prefix server
 ```
 
-Start the frontend in a second terminal:
+### 5. Start the frontend
+
+Open a second terminal in the repository directory:
 
 ```bash
 npm run dev --prefix client
 ```
 
-The local frontend is normally available at `http://localhost:5173`, and the API defaults to `http://localhost:5000/api`. The server connects to MongoDB before listening. `GET /api/health` reports `healthy` when MongoDB is connected and `degraded` with HTTP 503 otherwise.
+The default local addresses are:
 
-## Tests, build, and audits
+- **Frontend:** http://localhost:5173
+- **API:** http://localhost:5000/api
+- **Health endpoint:** http://localhost:5000/api/health
+
+If the API is deployed at a different address, configure `VITE_API_BASE_URL` in the frontend environment using the format expected by the application. Restart or rebuild Vite after changing environment variables.
+
+**Security note:** Never commit `.env` files, database connection strings, private keys, passwords, or authentication tokens.
+
+## API Overview
+
+### Public endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/auth/register` | Register a user |
+| POST | `/api/auth/login` | Authenticate a user |
+| GET | `/api/health` | Check API and database health |
+
+### Authenticated endpoints
+
+Protected requests use the following header:
+
+```http
+Authorization: Bearer <token>
+```
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/projects?page=1&limit=20` | List projects |
+| POST | `/api/projects` | Create a project |
+| GET | `/api/projects/:id` | Retrieve project details |
+| PATCH | `/api/projects/:id` | Update a project |
+| DELETE | `/api/projects/:id` | Delete a project |
+| GET | `/api/projects/:id/risk-history` | Retrieve risk history |
+| GET | `/api/projects/:projectId/signals` | List project signals |
+| POST | `/api/projects/:projectId/signals` | Create a signal |
+| GET | `/api/signals/:id` | Retrieve a signal |
+| PATCH | `/api/signals/:id` | Update a signal |
+| DELETE | `/api/signals/:id` | Delete a signal |
+| PATCH | `/api/signals/:id/status` | Change signal status |
+
+Responses use structured JSON. Errors are returned as sanitized responses rather than intentionally exposing internal implementation details.
+
+## Testing and Quality Checks
+
+The backend uses Node.js's built-in test runner. Its automated suite covers backend behavior using isolated model mocks, so these tests do not require a live MongoDB instance.
+
+Run the backend tests:
 
 ```bash
 npm test --prefix server
+```
+
+Build the frontend for production:
+
+```bash
 npm run build --prefix client
+```
+
+Check the Git diff for whitespace errors:
+
+```bash
 git diff --check
+```
+
+Audit client dependencies:
+
+```bash
 npm audit --prefix client
+```
+
+Audit server production dependencies:
+
+```bash
+npm audit --omit=dev --prefix server
+```
+
+Audit all server dependencies, including development tooling:
+
+```bash
 npm audit --prefix server
 ```
 
-The backend suite uses Node's built-in test runner and isolated model mocks; it does not require a live database. The frontend has a production build but no separate frontend test suite. Do not point automated tests at a development or production database.
+### Validation results
 
-## Reproducible demonstration
+The following checks were reported as passing during local development:
 
-Use a disposable MongoDB database and a test account that contains no real data.
+- **Backend tests:** 34 tests passed, 0 failed.
+- **Frontend production build:** Successful.
+- **Client dependency audit:** 0 reported vulnerabilities.
+- **Production server dependency audit:** 0 reported vulnerabilities.
+- **Authentication and API behavior:** Local workflows tested, including project and signal operations, status transitions, evidence validation, refresh persistence, and user ownership isolation.
 
-1. Configure the server and client environment files, then start both commands above.
-2. Open the frontend and register a new user. Sign out and log in again to verify the authentication flow.
-3. Refresh the page while logged in. The dashboard should restore the session; an invalid or expired token should require signing in again.
-4. Create a project and confirm its empty state shows full health and zero signals.
-5. Add a `failed_test`, `bug`, or `dependency_alert` signal with low, medium, high, or critical severity. The dashboard should display the risk and health values returned by the API.
-6. Move the signal through permitted statuses. Attempting to set `verified` without non-empty evidence must fail; valid evidence must succeed.
-7. Open risk history after the mutation. A snapshot should be present. Refreshing or listing signals should not create a new snapshot solely because of the read.
-8. Register a second disposable user and create a separate project. Requests using the other user's project or signal IDs must return an inaccessible-resource response and must not change data.
-9. Log out, then confirm protected project operations are rejected until logging in again.
-10. Exercise an empty project, invalid form fields, malformed JSON, an unavailable API, and an expired session to check the visible loading and error states.
+These results describe the reported development checks, not an independent audit or a guarantee of production security. Run the commands again against the final commit to verify the current repository state.
 
-This script describes checks to perform; it is not a claim that browser or live MongoDB execution has been completed in this environment.
+## Reproducing the Main Workflow
 
-## API overview
+Use a disposable database and test accounts with no real user data.
 
-Public endpoints:
+1. Configure the backend and frontend environment.
+2. Register a user and log in.
+3. Refresh the page and check session restoration; confirm expired or invalid authentication is rejected.
+4. Create a project and inspect its initial risk and health values.
+5. Create a signal with a supported type and severity.
+6. Change the signal status through permitted transitions.
+7. Attempt verification without evidence, then submit valid evidence.
+8. Inspect the project's risk history after a relevant mutation.
+9. Register a second test user and verify that cross-user project and signal access is denied.
+10. Test validation errors, unavailable API behavior, and protected operations after logout.
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/health`
+Run live API tests only against a separate test database. Automated model-mock tests and live database integration tests are different kinds of validation.
 
-Authenticated endpoints require `Authorization: Bearer <token>`:
+## Development Workflow with Code0
 
-- `GET /api/projects?page=1&limit=20`
-- `POST /api/projects`
-- `GET/PATCH/DELETE /api/projects/:id`
-- `GET /api/projects/:id/risk-history`
-- `GET/POST /api/projects/:projectId/signals`
-- `GET/PATCH/DELETE /api/signals/:id`
-- `PATCH /api/signals/:id/status`
+Code0 (`frigga.code0`) was used as an AI-assisted development tool during implementation and debugging. Its suggestions were reviewed and evaluated through code changes, automated tests, and local application checks.
 
-Responses use `{ success, data }`; project detail and signal-list responses also include `risk`. Errors are sanitized JSON responses.
+### Tasks assisted by Code0
 
-## Risk formula
+1. **Backend debugging:** Investigated signal-status behavior and risk-history route ordering.
+2. **Authentication configuration:** Diagnosed JWT secret configuration issues affecting authentication.
+3. **CORS troubleshooting:** Investigated cross-origin requests between the Vite frontend and Express backend.
+4. **Regression testing:** Helped identify edge cases and develop tests for previously discovered backend defects.
+5. **Security review:** Assisted with reviewing authentication middleware, project ownership checks, and signal authorization workflows.
 
-Each signal contributes:
+Code0 assisted development; it was not an autonomous security auditor. AI-generated suggestions were not treated as proof of correctness.
 
-`(severity points + type points) × status multiplier`
+## Known Limitations and Security Considerations
 
-Severity points: low `5`, medium `12`, high `25`, critical `40`. Type points: failed test `10`, bug `8`, dependency alert `12`. Status multipliers: open `1.0`, in progress `0.7`, fixed unverified `0.5`, verified `0`, reopened `1.2`.
+DevPulse AI is an MVP. The current implementation does not:
 
-The summed contribution is rounded to the nearest integer and capped at `100`. Health is `100 - risk`. Risk levels are low `0–24`, medium `25–49`, high `50–74`, and critical `75–100`.
+- Scan live GitHub repositories automatically.
+- Apply autonomous code fixes.
+- Predict future incidents using a trained machine-learning model.
+- Provide enterprise team permissions or billing.
+- Depend on an external AI service for its scoring calculations.
 
-## Troubleshooting and limitations
+Before production deployment, additional operational work is required, including HTTPS, secure secret management and rotation, rate limiting, monitoring, database backups, restricted database network access, and appropriate integration testing.
 
-- **Authentication is not configured:** set `JWT_SECRET` on the server and restart it.
-- **Database connection failed:** verify the isolated MongoDB URI, network access, and database permissions without printing the URI.
-- **CORS failure:** add the exact browser origin to `CORS_ORIGINS`, then restart the API.
-- **Frontend cannot reach the API:** set `VITE_API_BASE_URL` and rebuild or restart Vite.
-- **Server audit findings:** development tooling may report transitive vulnerabilities through `nodemon`; do not use a breaking `npm audit fix --force` without reviewing the upgrade.
+### Dependency audit findings
 
-This MVP does not scan live GitHub repositories, apply autonomous fixes, provide team permissions or billing, or call an external AI service. Production deployment still requires HTTPS, secret rotation, rate limiting, monitoring, backups, and a dedicated integration-test database.
+The production server dependency audit reported zero vulnerabilities. The full server audit reported three high-severity findings in the development dependency chain:
 
-## Release checklist
+`nodemon → chokidar → braces`
 
-- [ ] Review the final diff and confirm no `.env`, credentials, tokens, private keys, or production URIs are tracked.
-- [ ] Configure production `MONGODB_URI`, `JWT_SECRET` (32+ random characters), `PORT`, and exact `CORS_ORIGINS`.
-- [ ] Configure the frontend `VITE_API_BASE_URL` for the deployed API.
-- [ ] Use HTTPS for frontend-to-API traffic and restrict MongoDB network access.
-- [ ] Run backend tests, frontend build, diff check, and dependency audits.
-- [ ] Run the demonstration against an isolated test database.
-- [ ] Confirm health, startup failure, graceful shutdown, authentication, ownership, status/evidence, and risk-history behavior.
-- [ ] Review unresolved audit findings and deployment logs before publishing.
-- [ ] Commit, tag, push, and deploy only after repository-owner review.
+The findings include the [`braces` advisory GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
+
+The suggested automatic fix would downgrade Nodemon to an older major version, so it was not applied blindly. The development dependency findings remain unresolved and should be reviewed before relying on the development environment in a production workflow. Do not run `npm audit fix --force` without reviewing the resulting dependency changes.
+
+## Project Status
+
+**Status: MVP implemented and tested locally**
+
+DevPulse AI implements the core project and signal management workflows, JWT authentication, ownership checks, evidence-based verification, deterministic risk scoring, and risk history.
+
+### Development validation
+
+- [x] Backend automated tests passed (34 tests).
+- [x] Frontend production build completed successfully.
+- [x] Client dependency audit reported zero vulnerabilities.
+- [x] Production server dependency audit reported zero vulnerabilities.
+- [x] Authentication and session restoration tested locally.
+- [x] Project and signal workflows tested locally.
+- [x] Signal status transitions and verification evidence tested.
+- [x] Cross-user resource access restrictions tested.
+- [x] Risk history and refresh persistence checked.
+
+### Before production deployment
+
+- [ ] Configure production environment variables and deployment URLs.
+- [ ] Configure HTTPS, database access restrictions, monitoring, and backups.
+- [ ] Review and resolve or document outstanding development dependency audit findings.
+- [ ] Run deployment-specific integration and smoke tests.
+
+The production checklist covers deployment hardening, not missing core application features. DevPulse AI is presented as a functional MVP; production deployment is outside the current scope.
 
 ## Screenshots
 
-Add real screenshots only after running the application. Do not fabricate screenshots or include credentials.
+Add genuine screenshots of the running application here, such as:
+
+- Project dashboard with risk and health summaries.
+- Signal details showing severity, status, and verification evidence.
+- Risk history after a signal update.
+- Authentication and validation states.
+
+Only publish screenshots captured from the actual application. Remove tokens, email addresses, connection strings, and other private information before sharing.
+
+## Repository
+
+**GitHub:** https://github.com/suresh294/DevplusAI
+
+Built to demonstrate practical full-stack engineering: API development, secure resource access, transparent business logic, regression testing, and maintainable project documentation.

@@ -155,15 +155,15 @@ function Dashboard({ user, onLogout }) {
 
   if (loading) return <main className="page"><p className="loading-message">Loading your workspace...</p></main>;
   return <main className="page">
-    <header className="topbar"><div><div className="eyebrow">DEVPULSE AI</div><strong>Engineering Risk Intelligence</strong></div>
+    <header className="topbar"><div className="brand"><span className="brand-mark">D</span><div><div className="eyebrow">DEVPULSE AI</div><strong>Engineering Risk Intelligence</strong></div></div>
       <div className="top-actions"><span className="muted">{user.name}</span><button className="secondary" type="button" onClick={onLogout}>Log out</button></div></header>
     {error && <div className="alert error" role="alert"><span>{error}</span><button type="button" aria-label="Dismiss error" onClick={() => setError('')}>x</button></div>}
-    <div className="layout"><aside className="sidebar">
+    <div className="layout"><aside className="sidebar" aria-label="Project navigation">
       <div className="section-heading"><h2>Projects</h2><span className="count">{projects.length}</span></div>
       {projects.length === 0 && <p className="muted small">Create your first project to start tracking risk.</p>}
       {projects.map((project) => <button className={`project-item ${selected?._id === project._id ? 'active' : ''}`} type="button" key={project._id} disabled={projectLoading} onClick={() => loadProject(project._id)}>{project.name}<span>{project.description || 'No description'}</span></button>)}
       <form className="create-form" onSubmit={createProject}><label htmlFor="new-project-name">New project<input id="new-project-name" name="projectName" required placeholder="Project name" value={projectForm.name} onChange={(event) => setProjectForm({ ...projectForm, name: event.target.value })} /></label><button className="primary" disabled={saving !== ''} type="submit">{saving === 'project-create' ? 'Creating...' : '+ Create project'}</button></form>
-    </aside><section className="content">
+    </aside><section className="content" aria-label="Project workspace">
       {!selected ? <div className="empty-state"><span className="empty-icon">◈</span><h1>Select a project</h1><p>Choose a project or create one to see its engineering risk profile.</p></div> : <>
         {projectLoading ? <p className="loading-message">Loading project data...</p> : <><div className="content-heading"><div><div className="eyebrow">PROJECT OVERVIEW</div><h1>{selected.name}</h1></div><button className="danger-link" type="button" disabled={saving !== ''} onClick={deleteProject}>Delete project</button></div>
         {risk && <div className="score-card"><div><span className="eyebrow">HEALTH SCORE</span><strong className="health">{risk.healthScore}</strong><span className="score-unit">/100</span></div><div className="score-divider" /><div><span className="eyebrow">RISK</span><strong>{risk.riskScore}</strong><span className={`pill ${risk.riskLevel}`}>{risk.riskLevel}</span></div><div className="score-divider" /><div><span className="eyebrow">OPEN SIGNALS</span><strong>{risk.statusCounts?.open || 0}</strong><span className="muted">{risk.signalCount} total</span></div></div>}
