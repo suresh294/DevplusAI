@@ -5,6 +5,7 @@ const authenticate = require('../src/middleware/auth');
 const authController = require('../src/controllers/authController');
 const User = require('../src/models/user');
 const app = require('../src/app');
+const { isProductionJwtSecret } = require('../src/config/security');
 
 const response = () => {
   const result = {};
@@ -12,12 +13,20 @@ const response = () => {
     result.statusCode = code;
     return result;
   };
+
   result.json = (body) => {
     result.body = body;
     return result;
   };
   return result;
 };
+
+test('rejects long example JWT secrets for production', () => {
+  assert.equal(isProductionJwtSecret('replace-with-a-long-random-development-secret'), false);
+  assert.equal(isProductionJwtSecret('a'.repeat(31)), false);
+  assert.equal(isProductionJwtSecret('a'.repeat(32)), false);
+  assert.equal(isProductionJwtSecret('local-development-secret-32-characters!'), true);
+});
 
 test('rejects requests without a bearer token', () => {
   const res = response();

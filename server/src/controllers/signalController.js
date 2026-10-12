@@ -37,6 +37,7 @@ const createSignal = async (req, res) => {
     !signalTypes.includes(type) ||
     !signalSeverities.includes(severity) ||
     !signalStatuses.includes(status) ||
+    status === 'verified' ||
     (description !== undefined && typeof description !== 'string') ||
     (verificationEvidence !== undefined && typeof verificationEvidence !== 'string') ||
     (status === 'verified' && (!verificationEvidence || !verificationEvidence.trim()))
@@ -105,7 +106,6 @@ const listSignals = async (req, res) => {
       project: project._id,
     }).sort({ createdAt: -1 });
     const risk = scoreSignals(signals);
-    await saveRiskSnapshot(project._id, risk);
 
     return res.status(200).json({ success: true, data: signals, risk });
   } catch (error) {

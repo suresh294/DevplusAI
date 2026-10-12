@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
 const authenticate = require('./middleware/auth');
 const projectRoutes = require('./routes/projectRoutes');
@@ -45,9 +46,11 @@ app.use('/api/projects', authenticate, projectRoutes);
 app.use('/api/signals', authenticate, signalRoutes);
 
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'DevPulse AI API is healthy',
+  const databaseReady = mongoose.connection.readyState === 1;
+  res.status(databaseReady ? 200 : 503).json({
+    success: databaseReady,
+    status: databaseReady ? 'healthy' : 'degraded',
+    message: databaseReady ? 'DevPulse AI API is healthy' : 'Database connection is unavailable',
   });
 });
 
@@ -59,6 +62,7 @@ app.use((error, req, res, next) => {
     });
   }
 
+  console.error('Unhandled request error:', error.name || 'Error');
   return res.status(500).json({
     success: false,
     error: 'Internal server error',

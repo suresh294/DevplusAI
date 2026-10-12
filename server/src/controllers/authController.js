@@ -1,12 +1,16 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const { isProductionJwtSecret } = require('../config/security');
 
 const isRequestBodyObject = (body) =>
   body !== null && typeof body === 'object' && !Array.isArray(body);
 
 const issueToken = (userId) => {
-  if (!process.env.JWT_SECRET) {
+  if (
+    !process.env.JWT_SECRET ||
+    (process.env.NODE_ENV === 'production' && !isProductionJwtSecret(process.env.JWT_SECRET))
+  ) {
     throw new Error('JWT_SECRET is not configured');
   }
 
