@@ -355,16 +355,17 @@ DevPulse AI implements the core project and signal management workflows, JWT aut
 
 The production checklist covers deployment hardening, not missing core application features. DevPulse AI is presented as a functional MVP; production deployment is outside the current scope.
 
-## Screenshots
+## Application Screenshots
 
-Add genuine screenshots of the running application here, such as:
+### Project Dashboard
+![DevPulse AI Dashboard](docs/screenshots/Dashboard.png)
 
-- Project dashboard with risk and health summaries.
-- Signal details showing severity, status, and verification evidence.
-- Risk history after a signal update.
-- Authentication and validation states.
+### Signal Details
+![Signal Details](docs/screenshots/signal_details.png)
 
-Only publish screenshots captured from the actual application. Remove tokens, email addresses, connection strings, and other private information before sharing.
+### Authorization
+![Risk History](docs/screenshots/authorization.png)
+
 
 ## Repository
 
