@@ -1,10 +1,16 @@
 const jwt = require('jsonwebtoken');
+const { isProductionJwtSecret } = require('../config/security');
 
 const authenticate = (req, res, next) => {
   const authorization = req.get('authorization') || '';
   const [scheme, token] = authorization.split(' ');
 
-  if (scheme !== 'Bearer' || !token || !process.env.JWT_SECRET) {
+  if (
+    scheme !== 'Bearer' ||
+    !token ||
+    !process.env.JWT_SECRET ||
+    (process.env.NODE_ENV === 'production' && !isProductionJwtSecret(process.env.JWT_SECRET))
+  ) {
     return res.status(401).json({
       success: false,
       error: 'Authentication required',
