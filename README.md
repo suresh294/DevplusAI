@@ -1,5 +1,7 @@
 # DevPulse AI — Engineering Risk Intelligence
 
+[![CI](https://github.com/suresh294/DevplusAI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/suresh294/DevplusAI/actions/workflows/ci.yml)
+
 **Turn engineering signals into actionable project health insights.**
 
 DevPulse AI is a full-stack engineering risk management application that helps developers record bugs, failed tests, and dependency alerts, track remediation, and understand project health through transparent, deterministic risk scoring.
