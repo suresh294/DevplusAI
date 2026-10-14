@@ -40,10 +40,15 @@ const startServer = async () => {
     };
     process.once('SIGINT', () => shutdown('SIGINT'));
     process.once('SIGTERM', () => shutdown('SIGTERM'));
-  } catch (error) {
-    console.error('Server startup failed. Required configuration or database connection is unavailable.');
-    process.exitCode = 1;
-  }
+  } } catch (error) {
+  console.error('Server startup failed.');
+  console.error('Error type:', error.name);
+  console.error(
+    'Error details:',
+    String(error.message).replace(/mongodb(\+srv)?:\/\/\S+/gi, '[REDACTED_MONGODB_URI]')
+  );
+  process.exitCode = 1;
+}
 };
 
 startServer();
