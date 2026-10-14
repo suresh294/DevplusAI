@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/suresh294/DevplusAI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/suresh294/DevplusAI/actions/workflows/ci.yml)
 
+**Live demo:** [DevPulse AI](https://devplusai.netlify.app/) · **API health:** [Render health endpoint](https://devplusai.onrender.com/api/health) · **Source code:** [GitHub repository](https://github.com/suresh294/DevplusAI)
+
+> The public demo uses Netlify for the frontend, Render for the API, and MongoDB Atlas for persistence. Render's free service may take a little time to wake up after inactivity.
+
 **Turn engineering signals into actionable project health insights.**
 
 DevPulse AI is a full-stack engineering risk management application that helps developers record bugs, failed tests, and dependency alerts, track remediation, and understand project health through transparent, deterministic risk scoring.
@@ -318,7 +322,7 @@ DevPulse AI is an MVP. The current implementation does not:
 - Provide enterprise team permissions or billing.
 - Depend on an external AI service for its scoring calculations.
 
-Before production deployment, additional operational work is required, including HTTPS, secure secret management and rotation, rate limiting, monitoring, database backups, restricted database network access, and appropriate integration testing.
+The public demonstration is deployed on Netlify and Render and connects to MongoDB Atlas. A working demo is not the same as a production security review. Before using real or sensitive data, complete additional hardening such as strict database network access, secret rotation, rate limiting, monitoring, database backups, and deployment-specific integration testing.
 
 ### Dependency audit findings
 
@@ -332,7 +336,7 @@ The suggested automatic fix would downgrade Nodemon to an older major version, s
 
 ## Project Status
 
-**Status: MVP implemented and tested locally**
+**Status: MVP deployed for demonstration; production hardening remains**
 
 DevPulse AI implements the core project and signal management workflows, JWT authentication, ownership checks, evidence-based verification, deterministic risk scoring, and risk history.
 
@@ -348,14 +352,22 @@ DevPulse AI implements the core project and signal management workflows, JWT aut
 - [x] Cross-user resource access restrictions tested.
 - [x] Risk history and refresh persistence checked.
 
-### Before production deployment
+### Live deployment
 
-- [ ] Configure production environment variables and deployment URLs.
-- [ ] Configure HTTPS, database access restrictions, monitoring, and backups.
+- [x] Frontend deployed: [https://devplusai.netlify.app/](https://devplusai.netlify.app/)
+- [x] Backend deployed: [https://devplusai.onrender.com](https://devplusai.onrender.com)
+- [x] API and database health endpoint responds successfully: [Check API health](https://devplusai.onrender.com/api/health)
+- [x] Frontend-to-backend connection configured and account creation tested by the project owner.
+
+### Recommended production hardening
+
+- [ ] Restrict MongoDB Atlas network access instead of leaving broad access enabled.
+- [ ] Confirm production secrets are strong, private, and not committed to GitHub.
 - [ ] Review and resolve or document outstanding development dependency audit findings.
-- [ ] Run deployment-specific integration and smoke tests.
+- [ ] Run a full smoke test of registration, login, project CRUD, signal lifecycle, evidence verification, risk history, and cross-user access controls against the deployed environment.
+- [ ] Add monitoring, backups, and appropriate rate limiting before handling real user data.
 
-The production checklist covers deployment hardening, not missing core application features. DevPulse AI is presented as a functional MVP; production deployment is outside the current scope.
+These are hardening and verification tasks, not a claim that the currently deployed demo has already passed an independent production audit.
 
 ## Application Screenshots
 
